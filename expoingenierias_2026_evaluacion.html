@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExpoIngenierías 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #f0f4f8; --surface: #ffffff; --surface2: #e8eef5;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --accent: #2563eb; --accent2: #7c3aed; --gold: #d97706;
+    --success: #059669; --danger: #dc2626; --text: #0f172a; --muted: #64748b;
+    --radius: 12px; --radius-lg: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); background: rgba(240,244,248,0.97); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color:#fff; }
+  .nav-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+  .nav-subtitle { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .nav-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--muted); }
+  .content { flex: 1; padding: 32px 24px; max-width: 700px; margin: 0 auto; width: 100%; }
+  #screen-home .content { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 28px; padding-top: 60px; }
+  .hero-icon { width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+  .hero-title { font-size: 38px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+  .hero-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-desc { color: var(--muted); font-size: 16px; max-width: 440px; }
+  .btn-group { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn { padding: 12px 24px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: #d1dce9; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #047857; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+  .btn-full { width: 100%; justify-content: center; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  #screen-scan .content { display: flex; flex-direction: column; gap: 24px; padding-top: 40px; }
+  .manual-input-group { display: flex; gap: 10px; width: 100%; }
+  .project-suggestion { background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px 18px; display: none; gap: 12px; align-items: center; animation: fadeIn 0.2s ease; }
+  .project-suggestion.visible { display: flex; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+  .suggestion-icon { font-size: 24px; }
+  .suggestion-name { font-weight: 600; font-size: 15px; }
+  .suggestion-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; display: block; font-weight: 500; }
+  .form-input, .form-select { width: 100%; padding: 11px 14px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select option { background: #fff; color: #0f172a; }
+  .form-input[readonly] { background: rgba(37,99,235,0.06); border-color: rgba(37,99,235,0.3); color: var(--text); }
+  .rubric-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; overflow: hidden; }
+  .rubric-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .rubric-weight { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: rgba(79,156,249,0.15); color: var(--accent); border: 1px solid rgba(79,156,249,0.25); white-space: nowrap; }
+  .rubric-title { font-size: 15px; font-weight: 600; }
+  .rubric-body { padding: 0; }
+  .criterion { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .criterion:last-child { border-bottom: none; }
+  .criterion-text { font-size: 14px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .option-btn { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.4; }
+  .option-btn:hover { border-color: var(--accent); }
+  .option-btn.selected { border-color: var(--accent); background: rgba(37,99,235,0.1); }
+  .option-btn .opt-level { font-weight: 600; font-size: 11px; color: var(--accent); display: block; margin-bottom: 2px; }
+  .score-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.25); }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 24px; }
+  .progress-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.4s; }
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+  .tab-btn { flex: 1; padding: 9px 12px; border-radius: 7px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .tab-btn.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .category-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 20px; overflow: hidden; }
+  .category-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+  .cat-icon { font-size: 20px; }
+  .stage-section { border-bottom: 1px solid var(--border); }
+  .stage-section:last-child { border-bottom: none; }
+  .stage-label { padding: 10px 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 8px; }
+  .stage-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(79,156,249,0.1); color: var(--accent); border: 1px solid rgba(79,156,249,0.2); }
+  .team-row { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border); }
+  .team-row:hover { background: rgba(0,0,0,0.01); }
+  .rank { font-family: 'Syne', sans-serif; font-weight: 800; width: 24px; text-align: center; font-size: 15px; }
+  .rank.gold { color: #f59e0b; } .rank.silver { color: #94a3b8; } .rank.bronze { color: #b45309; }
+  .team-name { flex: 1; font-size: 14px; font-weight: 500; }
+  .team-evaluator { font-size: 12px; color: var(--muted); }
+  .team-score-bar { display: flex; align-items: center; gap: 8px; }
+  .mini-bar { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .mini-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .team-score-val { font-size: 13px; font-weight: 600; min-width: 36px; text-align: right; }
+  .report-section { margin-bottom: 28px; }
+  .report-section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .project-report-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 14px; overflow: hidden; }
+  .prc-header { padding: 14px 18px; background: var(--surface2); display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+  .prc-id { font-family: 'Syne',sans-serif; font-weight:700; font-size:14px; }
+  .prc-name { font-size:13px; color:var(--muted); }
+  .prc-scores { padding: 12px 18px; }
+  .prc-score-row { display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid var(--border); }
+  .prc-score-row:last-child { border-bottom:none; }
+  .prc-evaluator { font-size:13px; flex:1; color:var(--muted); }
+  .prc-score-badge { font-size:13px; font-weight:700; color:var(--accent); background:rgba(37,99,235,0.08); padding:3px 10px; border-radius:8px; }
+  .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+  .filter-chip { padding:6px 14px; border-radius:20px; font-size:12px; border:1px solid var(--border2); background:var(--surface); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .filter-chip.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .toast { position: fixed; bottom: 24px; right: 24px; z-index: 100; background: var(--success); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  #screen-admin-login .content { display: flex; align-items: center; justify-content: center; padding-top: 80px; }
+  .login-card { max-width: 380px; width: 100%; }
+  .login-icon { width: 56px; height: 56px; border-radius: 14px; margin: 0 auto 20px; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .result-hero { text-align: center; padding: 32px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .big-score { font-family: 'Syne', sans-serif; font-size: 72px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .breakdown-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-label { flex: 1; font-size: 14px; color: var(--muted); }
+  .breakdown-score { font-size: 14px; font-weight: 600; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+  .project-list-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .project-list-table th { text-align:left; padding:8px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); border-bottom:2px solid var(--border); }
+  .project-list-table td { padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .project-list-table tr:last-child td { border-bottom:none; }
+  .project-list-table tr:hover td { background:rgba(37,99,235,0.03); }
+  .cat-pill { font-size:11px; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .cat-fisico { background:rgba(217,119,6,0.12); color:#b45309; }
+  .cat-software { background:rgba(37,99,235,0.1); color:var(--accent); }
+  .cat-invest { background:rgba(5,150,105,0.1); color:var(--success); }
+  .fab-admin { position: fixed; bottom: 24px; left: 24px; z-index: 50; width: 46px; height: 46px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.1); transition: all 0.2s; color: var(--muted); }
+  .fab-admin:hover { background: var(--surface2); transform: translateY(-2px); }
+  @media (max-width: 560px) { .hero-title { font-size: 28px; } .options-grid { grid-template-columns: 1fr; } .stat-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<button class="fab-admin" id="fab-admin" onclick="goTo('screen-admin-login')" title="Panel administrativo">🔐</button>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <nav class="nav">
+    <div class="nav-brand"><div class="nav-logo">EI</div><div><div class="nav-title">Expoingenierías</div><div class="nav-subtitle">Sistema de evaluación</div></div></div>
+    <div class="nav-badge">2026</div>
+  </nav>
+  <div class="content">
+    <div class="hero-icon">🏆</div>
+    <h1 class="hero-title">Evaluación de<br><span>Proyectos</span></h1>
+    <p class="hero-desc">Plataforma oficial de evaluación para el evento Expoingenierías. Selecciona tu rol para continuar.</p>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="goTo('screen-scan')">📋 Evaluar equipo</button>
+      <button class="btn btn-secondary" onclick="goTo('screen-admin-login')">🔐 Panel administrativo</button>
+    </div>
+  </div>
+</div>
+
+<!-- IDENTIFY TEAM -->
+<div class="screen active" id="screen-scan">
+  <nav class="nav">
+    <div class="nav-brand"><div class="nav-logo">EI</div><div><div class="nav-title">Expoingenierías</div><div class="nav-subtitle">Sistema de evaluación</div></div></div>
+    <div class="nav-badge">2026</div>
+  </nav>
+  <div class="content">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px;">Identificar equipo</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Ingresa el ID del equipo para autocompletar su nombre y categoría.</p>
+    <div class="card" style="margin-bottom:0">
+      <div class="form-group">
+        <label class="form-label">ID del equipo</label>
+        <div class="manual-input-group">
+          <input type="text" class="form-input" id="team-id-input" placeholder="Ej. PF1" style="flex:1;text-transform:uppercase;" oninput="onTeamIDInput(this.value)" />
+        </div>
+      </div>
+      <div class="project-suggestion" id="project-suggestion">
+        <div class="suggestion-icon" id="sug-icon">📁</div>
+        <div><div class="suggestion-name" id="sug-name">—</div><div class="suggestion-meta" id="sug-meta">—</div></div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Nombre del proyecto</label>
+        <input type="text" class="form-input" id="team-name-input" placeholder="Se autocompleta al ingresar un ID válido" readonly />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría del proyecto</label>
+        <select class="form-select" id="team-category" disabled>
+          <option value="">— Se autocompleta —</option>
+          <option value="prototipo-fisico">🔧 Prototipo físico</option>
+          <option value="prototipo-software">💻 Prototipo de software</option>
+          <option value="investigacion">📄 Investigación y propuesta de mejora</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Etapa del equipo</label>
+        <select class="form-select" id="team-stage">
+          <option value="">— Selecciona etapa —</option>
+          <option value="exploracion">🌱 Exploración (1°–3° semestre)</option>
+          <option value="enfoque">🎯 Enfoque (4°–6° semestre)</option>
+          <option value="especializacion">🚀 Especialización (7°–9° semestre)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="captureTeamID()" style="margin-top:16px;">Continuar →</button>
+    <div style="margin-top:32px;">
+      <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">📋 Listado de proyectos registrados</div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="project-list-table"><thead><tr><th>ID</th><th>Nombre del proyecto</th><th>Categoría</th></tr></thead><tbody id="project-list-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EVALUATOR INFO -->
+<div class="screen" id="screen-evaluator">
+  <nav class="nav">
+    <div class="nav-brand"><button class="btn btn-secondary btn-sm" onclick="goTo('screen-scan')">← Regresar</button></div>
+    <div class="nav-badge" id="eval-team-badge">Equipo —</div>
+  </nav>
+  <div class="content">
+    <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px;">Datos del evaluador</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:28px;">Ingresa tu nombre antes de comenzar la evaluación.</p>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Nombre completo del evaluador</label>
+        <input type="text" class="form-input" id="evaluator-name" placeholder="Ej. Dr. Alejandro Torres" />
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Presentó con</label>
+        <select class="form-select" id="presentation-type">
+          <option value="prototipo">🔧 Prototipo</option>
+          <option value="poster">📋 Póster</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startEvaluation()">Iniciar evaluación →</button>
+  </div>
+</div>
+
+<!-- EVAL FORM -->
+<div class="screen" id="screen-eval">
+  <nav class="nav">
+    <div class="nav-brand"><div id="eval-nav-info" style="font-size:13px;color:var(--muted)">Evaluando —</div></div>
+    <div class="score-pill" id="live-score">0 / 100</div>
+  </nav>
+  <div class="content" id="eval-content"></div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="screen-result">
+  <nav class="nav">
+    <div class="nav-brand"><div class="nav-title">Evaluación completada</div></div>
+    <div class="nav-badge" id="result-team-badge"></div>
+  </nav>
+  <div class="content">
+    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    <div class="result-hero">
+      <div style="font-size:48px">✅</div>
+      <div class="big-score" id="final-score-display">—</div>
+      <div style="color:var(--muted);font-size:15px;">Puntuación total sobre 100</div>
+      <div id="result-cat-badge" class="score-pill" style="font-size:13px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Desglose por sección</div>
+      <div id="breakdown-list"></div>
+    </div>
+    <button class="btn btn-success btn-full" onclick="goTo('screen-scan')" style="margin-top:8px;">Evaluar otro equipo →</button>
+    <button class="btn btn-secondary btn-full" onclick="goTo('screen-home')" style="margin-top:8px;">Volver al inicio</button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div class="screen" id="screen-admin-login">
+  <nav class="nav">
+    <div class="nav-brand"><button class="btn btn-secondary btn-sm" onclick="goTo('screen-scan')">← Regresar</button></div>
+  </nav>
+  <div class="content">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h2 style="font-size:22px;font-weight:700;text-align:center;margin-bottom:6px;">Panel administrativo</h2>
+      <p style="color:var(--muted);text-align:center;font-size:14px;margin-bottom:28px;">Ingresa la contraseña para acceder al panel de reportes.</p>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" class="form-input" id="admin-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()" />
+      </div>
+      <div id="login-error" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none;">Contraseña incorrecta.</div>
+      <button class="btn btn-primary btn-full" onclick="adminLogin()">Entrar al panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="screen" id="screen-admin">
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">🏅</div>
+      <div><div class="nav-title">Panel administrativo</div><div class="nav-subtitle">Expoingenierías 2026</div></div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="adminLogout()">Salir</button>
+  </nav>
+  <div class="content">
+    <div class="stat-grid" id="admin-stats"></div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('tab-all',event)">Todos</button>
+      <button class="tab-btn" onclick="switchTab('tab-ranking',event)">Ranking</button>
+      <button class="tab-btn" onclick="switchTab('tab-report',event)">📊 Reporte</button>
+    </div>
+    <div id="tab-all">
+      <div id="all-teams-list"></div>
+      <div style="text-align:center;margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-success btn-sm" onclick="exportXLSX()">⬇ Exportar Excel (.xlsx)</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearData()">🗑 Limpiar datos</button>
+      </div>
+    </div>
+    <div id="tab-ranking" style="display:none;"><div id="ranking-content"></div></div>
+    <div id="tab-report" style="display:none;"><div id="report-content"></div></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// PROJECTS DATABASE
+// ============================================================
+const PROJECTS = [
+  { id: "PF4", name: "Elyos Racing Team_Orión", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "IyP1", name: "Pepthydra : Barrier Repair Cream", category: "investigacion", stage: "especializacion" },
+  { id: "IyP2", name: "NATIVA, toalla sanitarias 100% biodegradables", category: "investigacion", stage: "especializacion" },
+  { id: "PS1", name: "Alerta potaxie", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS2", name: "Aersa Copiloto", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS3", name: "¿Dónde está mi Pulpo?", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS4", name: "Copiloto para la creación y análisis de alertas", category: "prototipo-software", stage: "especializacion" },
+  { id: "IyP3", name: "Florece+", category: "investigacion", stage: "especializacion" },
+  { id: "IyP4", name: "EcoMicelio: Desarrollo de un bioproceso para la producción de Myka BioCuero a partir de Aspergillus niger", category: "investigacion", stage: "especializacion" },
+  { id: "PF1", name: "Bloque Integrador: Operación simulada de un puerto marítimo autónomo; Equipo 1", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS28", name: "Bloque integrador: Puerto marítimo autónomo; Equipo 2", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF2", name: "Bloque integrador: Puerto marítimo autónomo; Equipo 3", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF3", name: "Bloque integrador: Puerto marítimo autónomo; Equipo 4", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS6", name: "Copiloto AERSA", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS7", name: "Snowlang", category: "prototipo-software", stage: "enfoque" },
+  { id: "IyP5", name: "Chocotrufis: Valorización Biotecnológica de Cáscara de Plátano en Confitería Funcional", category: "investigacion", stage: "especializacion" },
+  { id: "IyP6", name: "Orbliss", category: "investigacion", stage: "especializacion" },
+  { id: "IyP7", name: "Orbliss", category: "investigacion", stage: "especializacion" },
+  { id: "PF5", name: "Diseño de reductor de velocidad para una desfibradora de caña de azúcar", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF6", name: "Diseño de reductor de desfibrador de caña de azúcar", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "IyP8", name: "Xuna", category: "investigacion", stage: "especializacion" },
+  { id: "IyP9", name: "Serén: alimento funcional para el síndrome de abstinencia a la nicotina", category: "investigacion", stage: "especializacion" },
+  { id: "IyP10", name: "MICarne", category: "investigacion", stage: "especializacion" },
+  { id: "PF7", name: "Object Localization in a Smart Warehouse: Vegas", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF8", name: "Aspiradora Inteligente", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF9", name: "Optmus Trash", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF10", name: "Matt: Sistema inteligente para limpieza de pizarras", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF11", name: "Dobort Robot Almacenamiento", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF12", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF13", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF14", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF15", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF16", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF17", name: "Diseño de Maquinas Herramientas - URREA", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "IyP11", name: "Diseño de Maquinas Herramientas", category: "investigacion", stage: "especializacion" },
+  { id: "PS8", name: "Cogeneration modelling at Flex", category: "prototipo-software", stage: "enfoque" },
+  { id: "PS9", name: "Cogeneration Modelling at Flex", category: "prototipo-software", stage: "enfoque" },
+  { id: "IyP12", name: "x", category: "investigacion", stage: "enfoque" },
+  { id: "PF18", name: "Prototipo Baja SAE", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "IyP13", name: "Mejora del proceso de muestreo en Industrias Valore", category: "investigacion", stage: "enfoque" },
+  { id: "IyP14", name: "Mejora del proceso de muestreo en Industrias Valore", category: "investigacion", stage: "enfoque" },
+  { id: "PS10", name: "SignSync", category: "prototipo-software", stage: "exploracion" },
+  { id: "IyP15", name: "Tim no naturales", category: "investigacion", stage: "enfoque" },
+  { id: "IyP16", name: "Verificación de clonación y expresión", category: "investigacion", stage: "enfoque" },
+  { id: "IyP17", name: "Análisis de expresión de genes implicados en la calidad y viabilidad embrionaria del Bos taurus", category: "investigacion", stage: "enfoque" },
+  { id: "IyP18", name: "Equipo11-TritonHeal", category: "investigacion", stage: "especializacion" },
+  { id: "IyP19", name: "Equipo12-Cryton", category: "investigacion", stage: "especializacion" },
+  { id: "IyP20", name: "Equipo13-Los VerCUDA's", category: "investigacion", stage: "especializacion" },
+  { id: "IyP21", name: "Equipo14-KernelGang", category: "investigacion", stage: "especializacion" },
+  { id: "IyP22", name: "Equipo15-Deepbork", category: "investigacion", stage: "especializacion" },
+  { id: "IyP23", name: "Equipo16-Projecto Amphitrite", category: "investigacion", stage: "especializacion" },
+  { id: "IyP24", name: "Equipo21-KernelForge", category: "investigacion", stage: "especializacion" },
+  { id: "IyP25", name: "Equipo22-International Programmers", category: "investigacion", stage: "especializacion" },
+  { id: "IyP26", name: "Equipo23-Tritri-triton", category: "investigacion", stage: "especializacion" },
+  { id: "IyP27", name: "Equipo24", category: "investigacion", stage: "especializacion" },
+  { id: "IyP28", name: "Equipo25-TriPyTran", category: "investigacion", stage: "especializacion" },
+  { id: "IyP29", name: "Equipo26-Las Tritonas", category: "investigacion", stage: "especializacion" },
+  { id: "IyP30", name: "Equipo31-GPU Tritonizers", category: "investigacion", stage: "especializacion" },
+  { id: "IyP31", name: "Equipo32-3 tons", category: "investigacion", stage: "especializacion" },
+  { id: "IyP32", name: "Equipo33-Los Kernales", category: "investigacion", stage: "especializacion" },
+  { id: "IyP33", name: "Equipo34-ParallelMind", category: "investigacion", stage: "especializacion" },
+  { id: "IyP34", name: "Equipo35-TRIED", category: "investigacion", stage: "especializacion" },
+  { id: "IyP35", name: "Equipo36-Sigmoids", category: "investigacion", stage: "especializacion" },
+  { id: "IyP36", name: "Equipo41-Los Triple T", category: "investigacion", stage: "especializacion" },
+  { id: "IyP37", name: "Equipo42-Sirenomanes III", category: "investigacion", stage: "especializacion" },
+  { id: "IyP38", name: "Equipo43-Trikito", category: "investigacion", stage: "especializacion" },
+  { id: "IyP39", name: "Equipo44-ITCianas Trepadoras Contra Cerros", category: "investigacion", stage: "especializacion" },
+  { id: "IyP40", name: "Equipo45-Trikitrakes", category: "investigacion", stage: "especializacion" },
+  { id: "IyP41", name: "Equipo46-HyperFix", category: "investigacion", stage: "especializacion" },
+  { id: "IyP42", name: "Optimization of Concession Transactions at Cinépolis Galerías", category: "investigacion", stage: "especializacion" },
+  { id: "IyP43", name: "Digital Channels and Client Satisfaction", category: "investigacion", stage: "especializacion" },
+  { id: "IyP44", name: "Eficiencia de Asignación en Cinépolis Galerias", category: "investigacion", stage: "especializacion" },
+  { id: "IyP45", name: "Canales Digitales 01", category: "investigacion", stage: "especializacion" },
+  { id: "IyP46", name: "Canales Digitales 02", category: "investigacion", stage: "especializacion" },
+  { id: "IyP47", name: "Transacciones Rápidas Forum Tlaquepaque", category: "investigacion", stage: "especializacion" },
+  { id: "IyP48", name: "Asignación de roles de trabajo a colaboradores operativos", category: "investigacion", stage: "especializacion" },
+  { id: "IyP49", name: "Mejora de un proceso en Banco de Alimentos", category: "investigacion", stage: "enfoque" },
+  { id: "IyP50", name: "Mejora de un proceso en el Banco de Alimentos", category: "investigacion", stage: "enfoque" },
+  { id: "PF19", name: "Grab a Pluch", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF20", name: "Banda transportadora inteligente", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF21", name: "Optimización de Tobera y Predicción de Altura en Cohetería Experimental", category: "prototipo-fisico", stage: "exploracion" },
+  { id: "IyP51", name: "Análisis de genes de bovinos Taurus", category: "investigacion", stage: "enfoque" },
+  { id: "IyP52", name: "SpokenTIM3", category: "investigacion", stage: "enfoque" },
+  { id: "IyP53", name: "Eq 1. Eficiencia en asignacion de cinepolitos Centro sur", category: "investigacion", stage: "especializacion" },
+  { id: "IyP54", name: "Eq. 2", category: "investigacion", stage: "especializacion" },
+  { id: "IyP55", name: "Eq. 3 Canales digitales Belenes", category: "investigacion", stage: "especializacion" },
+  { id: "IyP56", name: "Eq. 4 Transacciones rapidas Centro sur", category: "investigacion", stage: "especializacion" },
+  { id: "IyP57", name: "Eq. 5 Eficiencia en asignacion de cinepolitos Andares", category: "investigacion", stage: "especializacion" },
+  { id: "IyP58", name: "Techno-Economic and Environmental Assessment of a Brewery Wastewater Treatment Plant", category: "investigacion", stage: "enfoque" },
+  { id: "IyP59", name: "Escalamiento del proceso de secado de nanopartículas de carbonato de calcio", category: "investigacion", stage: "especializacion" },
+  { id: "PS11", name: "Nextipark Lote 4", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS12", name: "Nave Industrial Nextipark lote 156", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS13", name: "Diseño de nave industrial", category: "prototipo-software", stage: "especializacion" },
+  { id: "IyP60", name: "De la cimentación a la operación: Desarrollo de Proyecto Ejecutivo Nave Industrial Lote 156", category: "investigacion", stage: "especializacion" },
+  { id: "PS14", name: "Nave Industrial Nextipark", category: "prototipo-software", stage: "especializacion" },
+  { id: "IyP61", name: "Propuesta de escalamiento de recubrimiento de nanopartículas", category: "investigacion", stage: "especializacion" },
+  { id: "PF22", name: "The ION Console", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "IyP62", name: "LRCPB - NEXTIPARK nave industrial", category: "investigacion", stage: "especializacion" },
+  { id: "IyP63", name: "Diseño y Simulación de un Sistema de Secado para CaCO₃ Funcionalizado", category: "investigacion", stage: "especializacion" },
+  { id: "PS15", name: "Proceso de Secado; Nanoadhesivo Antidesgaste Fe-CaCO3-TA", category: "prototipo-software", stage: "especializacion" },
+  { id: "IyP64", name: "Optimizing Cleaner Brewery Wastewater Treatment through Anoxic Modeling", category: "investigacion", stage: "enfoque" },
+  { id: "PS16", name: "Propuesta Nave Industrial Nextipark EQ7", category: "prototipo-software", stage: "especializacion" },
+  { id: "PS17", name: "Record.io", category: "prototipo-software", stage: "exploracion" },
+  { id: "PF23", name: "IMPLEMENTATION OF AI ALGORITHMS IN AUTONOMOUS NAVIGATION ROBOTS", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF24", name: "Automated domestic hydroponic cultivation system", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF25", name: "Robotic Solutions for Precision Blackberry Harvesting", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF26", name: "Automated/Controled Hidroponic Tower", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF27", name: "COLLABORATIVE ROBOTIC", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF28", name: "Embedded System for Efficient Gesture Detection", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS18", name: "Smart Entry Control System", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF29", name: "ELECTRATON", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "IyP65", name: "Estandarización de condiciones de PCR para la detección de genes relacionados con la calidad embrionaria en Bos taurus", category: "investigacion", stage: "enfoque" },
+  { id: "PF30", name: "FIFO Poka-Yoke System", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF31", name: "Validation of PLC Methods Using Robotic Cells", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS19", name: "Loopzels", category: "prototipo-software", stage: "exploracion" },
+  { id: "IyP66", name: "Arquitectura de red empresarial para cisco LATAM", category: "investigacion", stage: "especializacion" },
+  { id: "PF32", name: "Text to Braille integrated system", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF33", name: "RESCUE ROBOT", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF34", name: "Substation assembly of a toy MINI manufacturing cell", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF35", name: "Development of a controlled active transmission system for human limb rehabilitation devices", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS20", name: "Design of integrated SRAM memory", category: "prototipo-software", stage: "especializacion" },
+  { id: "IyP67", name: "Rediseño y simulación computacional de un intercambiador de calor para la industria tequilera", category: "investigacion", stage: "enfoque" },
+  { id: "PF36", name: "Callera de carga industrial", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "IyP68", name: "Cisco LATAM Enterprise Network Architecture", category: "investigacion", stage: "especializacion" },
+  { id: "IyP69", name: "Desarrollo de un Dron VTOL Tricóptero de Ala Fija con Control Optimizado por PSO", category: "investigacion", stage: "especializacion" },
+  { id: "IyP70", name: "WeLAN", category: "investigacion", stage: "especializacion" },
+  { id: "PF37", name: "Diseño y desarrollo de un kit de acoplamiento de dirección y volante en un ATV", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PF38", name: "Diseño y desarrollo de un kit de acoplamiento (Eq.2)", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "IyP71", name: "Análisis de las causas de falla de pernos en un acople de un tren de laminación.", category: "investigacion", stage: "especializacion" },
+  { id: "IyP72", name: "Análisis de las causas de falla de pernos (Eq.2)", category: "investigacion", stage: "especializacion" },
+  { id: "IyP73", name: "Desarrollo de una Estrategia de Secado para Nanopartículas CaCO₃–Fe–TA sin Pérdida de Funcionalidad Superficial", category: "investigacion", stage: "especializacion" },
+  { id: "IyP74", name: "Identificación y validación molecular de marcadores transcriptómicos para viabilidad embrionaria bovina", category: "investigacion", stage: "enfoque" },
+  { id: "PF39", name: "Lentes para Cerritos", category: "prototipo-fisico", stage: "enfoque" },
+  { id: "PS21", name: "AQUACK!", category: "prototipo-software", stage: "exploracion" },
+  { id: "PF40", name: "Soluciones robóticas para recolección precisa de zarzamoras", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "IyP75", name: "Optimización y Funcionamiento de Máquina Ensambladora de Coladeras", category: "investigacion", stage: "especializacion" },
+  { id: "PS22", name: "Implementación de Algoritmos de IA en Robots de Competencia Autónomos", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF41", name: "Sistema de Filoguiado Redundante para Montacargas Raymond", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF42", name: "Desarrollo de un vehículo aéreo no tripulado de manufactura rápida para tareas de inspección", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS23", name: "Diseño Analógico y Digital Pre-Silicio de memoria SRAM de 4k x 32 bits de 180nm", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF43", name: "Estabilización de efector final de un manipulador móvil", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF44", name: "Diseño de un Control Unificado Basado en Cuaterniones para un Tricóptero VTOL de Ala Fija", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS24", name: "Desarrollo de Celda Automatizada en Realidad Virtual", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF45", name: "Nespresso Assembly Challenge", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF46", name: "Desarrollo de un vehículo aéreo no tripulado (Eq.2)", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "IyP76", name: "SpineForce", category: "investigacion", stage: "especializacion" },
+  { id: "IyP77", name: "Myocardial Bioactive Patch", category: "investigacion", stage: "especializacion" },
+  { id: "PF47", name: "Exoesqueleto pediátrico para rehabilitación de miembros inferiores con desplazamiento autónomo", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS25", name: "Analizador Morfocinético Espermático (AME)", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF48", name: "ENPRO: Entrenador para Control Protésico", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF49", name: "ClotScan", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS26", name: "DM-STRIDE", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF50", name: "HydroTherm Control System (HTCS)", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS27", name: "GaitVision", category: "prototipo-software", stage: "especializacion" },
+  { id: "PF51", name: "Functional Noninvasive Distal Status (FNDS)", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PF52", name: "TENSIO", category: "prototipo-fisico", stage: "especializacion" },
+  { id: "PS5", name: "ONE LESS", category: "prototipo-software", stage: "especializacion" }
+];
+
+const CAT_META = {
+  'prototipo-fisico':   { label: '🔧 Prototipo físico', pill: 'cat-fisico', icon: '🔧' },
+  'prototipo-software': { label: '💻 Prototipo de software', pill: 'cat-software', icon: '💻' },
+  'investigacion':      { label: '📄 Investigación y propuesta', pill: 'cat-invest', icon: '📄' },
+};
+
+// ============================================================
+// DATA & STORAGE — usa window.storage (artifacts) con fallback a memoria
+// ============================================================
+const ADMIN_PASS = "expo2026";
+const STORAGE_KEY = "expoingenieria_evals_2026";
+let _memoryStore = null; // fallback en memoria
+
+async function saveData(data) {
+  _memoryStore = data;
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {
+    console.warn('Storage no disponible, usando memoria', e);
+  }
+}
+
+async function loadData() {
+  if (_memoryStore !== null) return _memoryStore;
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) {
+      _memoryStore = JSON.parse(result.value);
+      return _memoryStore;
+    }
+  } catch(e) {
+    console.warn('No hay datos guardados aún');
+  }
+  _memoryStore = [];
+  return _memoryStore;
+}
+
+let currentEval = { team: null, projectName: null, category: null, stage: null, presentation: null, evaluator: null, scores: {} };
+
+// ============================================================
+// PROJECT LIST
+// ============================================================
+function renderProjectList() {
+  const tbody = document.getElementById('project-list-body');
+  tbody.innerHTML = PROJECTS.map(p => {
+    const meta = CAT_META[p.category];
+    return `<tr onclick="fillFromList('${p.id}')" style="cursor:pointer;">
+      <td><strong style="font-family:'Syne',sans-serif;">${p.id}</strong></td>
+      <td>${p.name}</td>
+      <td><span class="cat-pill ${meta.pill}">${meta.icon} ${meta.label.split(' ').slice(1).join(' ')}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function fillFromList(id) {
+  document.getElementById('team-id-input').value = id;
+  onTeamIDInput(id);
+}
+
+// ============================================================
+// AUTOCOMPLETE
+// ============================================================
+function onTeamIDInput(val) {
+  const normalized = val.trim().toUpperCase();
+  const project = PROJECTS.find(p => p.id === normalized) || PROJECTS.find(p => p.id.toUpperCase() === normalized);
+  const sug = document.getElementById('project-suggestion');
+  const nameInput = document.getElementById('team-name-input');
+  const catSelect = document.getElementById('team-category');
+  const stageSelect = document.getElementById('team-stage');
+  if (project) {
+    const meta = CAT_META[project.category];
+    const stageLabels = { exploracion:'🌱 Exploración', enfoque:'🎯 Enfoque', especializacion:'🚀 Especialización' };
+    document.getElementById('sug-icon').textContent = meta.icon;
+    document.getElementById('sug-name').textContent = project.name;
+    document.getElementById('sug-meta').textContent = meta.label + ' · ' + (stageLabels[project.stage]||project.stage);
+    sug.classList.add('visible');
+    nameInput.value = project.name;
+    catSelect.value = project.category;
+    stageSelect.value = project.stage;
+  } else {
+    sug.classList.remove('visible');
+    nameInput.value = '';
+    catSelect.value = '';
+    stageSelect.value = '';
+  }
+}
+
+// ============================================================
+// RUBRIC
+// ============================================================
+const RUBRIC = [
+  { section: "Marco teórico y fuentes", weight: 30, criteria: [
+    { text: "El proyecto se basa en conceptos, principios científicos básicos o avanzados y metodologías acordes a la disciplina y nivel de estudios.", options: [
+      { label: "Nulo", desc: "No se aplican conceptos, principios científicos ni metodologías.", val: 0 },
+      { label: "Deficiente", desc: "Se aplican principios científicos sin basarse en metodologías ni normativas.", val: 1 },
+      { label: "Regular", desc: "Se aplican principios y metodologías pero muestran errores en su implementación.", val: 2 },
+      { label: "Completo", desc: "Se aplican principios, metodologías y normativas que refuerzan a la perfección el proyecto.", val: 3 },
+    ]},
+    { text: "Todas las fuentes teóricas y procedimientos son apropiados, sostienen los argumentos y citan correctamente las fuentes bibliográficas.", options: [
+      { label: "Nulo", desc: "No presentan fuentes de investigación.", val: 0 },
+      { label: "Deficiente", desc: "Se presentan algunas fuentes poco confiables.", val: 1 },
+      { label: "Regular", desc: "Se presentan fuentes confiables pero sin total relación con los argumentos ni citas correctas.", val: 2 },
+      { label: "Completo", desc: "Fuentes confiables, alta relación con argumentos y citas correctas.", val: 3 },
+    ]},
+  ]},
+  { section: "Impacto (propósito)", weight: 25, criteria: [
+    { text: "El producto o resultado final tiene un propósito de servicio o académico claro que agrega o podría agregar valor a miembros de la sociedad, empresa, gobierno o comunidad académica.", options: [
+      { label: "Nulo", desc: "No existe una propuesta de valor.", val: 0 },
+      { label: "Deficiente", desc: "Propuesta de bajo impacto, limitada en escalabilidad y beneficia un sector reducido.", val: 1 },
+      { label: "Notable", desc: "Propuesta de mediano impacto pero con limitaciones para ser escalable.", val: 2 },
+      { label: "Completo", desc: "Propuesta de alto impacto, escalable y aplicable a cualquier miembro de la sociedad.", val: 3 },
+    ]},
+  ]},
+  { section: "Metodología", weight: 30, criteria: [
+    { text: "La metodología de aplicación del proyecto es clara, delineada paso a paso, de manera que puede comprenderse sin necesidad de explicaciones adicionales.", options: [
+      { label: "Nulo", desc: "No presentan una metodología.", val: 0 },
+      { label: "Deficiente", desc: "Se aplica una metodología pero no es clara y contiene errores.", val: 1 },
+      { label: "Notable", desc: "Se aplica una metodología pero no se comprende sin explicación adicional.", val: 2 },
+      { label: "Completo", desc: "Metodología clara, bien estructurada, sin errores y comprensible por sí sola.", val: 3 },
+    ]},
+    { text: "Se muestra evidencia de investigación, análisis de información, limitaciones del estudio y conclusiones sólidas congruentes con la problemática.", options: [
+      { label: "Nulo", desc: "No hay evidencia de investigación de campo.", val: 0 },
+      { label: "Deficiente", desc: "Investigación pobre y con poca relación para brindar conclusiones sólidas.", val: 1 },
+      { label: "Notable", desc: "Investigación amplia pero limitada a páginas web; tiene relación con el análisis.", val: 2 },
+      { label: "Completo", desc: "Investigación amplia con diversas fuentes y conclusiones sólidas.", val: 3 },
+    ]},
+  ]},
+  { section: "Presentación de solución", weight: 15, criteria: [
+    { text: "Se demuestra un trabajo de edición elaborado y original; se cumplen tiempos y se usan gráficos, tablas e imágenes de apoyo.", options: [
+      { label: "Nulo", desc: "Diseño no original, no se cumple el tiempo, no hay gráficos de apoyo.", val: 0 },
+      { label: "Deficiente", desc: "Se cumple el tiempo pero no se muestra un trabajo elaborado y original.", val: 1 },
+      { label: "Notable", desc: "Se cumple el tiempo y es legible pero no es elaborado ni original.", val: 2 },
+      { label: "Sobresaliente", desc: "Se cumple el tiempo, es legible y muestra un trabajo elaborado y original.", val: 3 },
+    ]},
+    { text: "Se usa un lenguaje formal-académico, tono de voz y pronunciación adecuados, con alto dominio del tema.", options: [
+      { label: "Nulo", desc: "No usa lenguaje formal, tono bajo, sin dominio del tema.", val: 0 },
+      { label: "Deficiente", desc: "Tono adecuado pero sin lenguaje formal ni dominio del tema.", val: 1 },
+      { label: "Notable", desc: "Tono y pronunciación adecuados, lenguaje formal, pero sin dominio del tema.", val: 2 },
+      { label: "Sobresaliente", desc: "Lenguaje formal-académico con alto dominio del tema.", val: 3 },
+    ]},
+    { text: "Se desarrolla con claridad la explicación y se atienden las preguntas generadas por el público.", options: [
+      { label: "Nulo", desc: "Explicación no clara y respuestas ambiguas.", val: 0 },
+      { label: "Deficiente", desc: "Explicación no clara pero se atienden preguntas.", val: 1 },
+      { label: "Notable", desc: "Explicación clara pero no se atienden las preguntas del público.", val: 2 },
+      { label: "Sobresaliente", desc: "Explicación y atención de preguntas clara y completa.", val: 3 },
+    ]},
+  ]},
+];
+
+let criterionMap = [];
+RUBRIC.forEach((s,si) => s.criteria.forEach((c,ci) => criterionMap.push({si,ci})));
+
+function computeScore(scores) {
+  let total = 0; let cIdx = 0; let breakdown = [];
+  RUBRIC.forEach((section) => {
+    let sMax = section.criteria.length * 3; let sScore = 0;
+    section.criteria.forEach(() => {
+      const key = cIdx++;
+      sScore += (scores[key] !== undefined ? scores[key] : 0);
+    });
+    const contrib = (sScore / sMax) * section.weight;
+    total += contrib;
+    breakdown.push({ section: section.section, weight: section.weight, score: Math.round(contrib * 10)/10, max: section.weight });
+  });
+  return { total: Math.round(total), breakdown };
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0,0);
+  const adminScreens = ['screen-admin-login', 'screen-admin', 'screen-home'];
+  const fab = document.getElementById('fab-admin');
+  if (fab) fab.style.display = adminScreens.includes(screenId) ? 'none' : 'flex';
+}
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = color || 'var(--success)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// EVALUATION FLOW
+// ============================================================
+function captureTeamID() {
+  const id = document.getElementById('team-id-input').value.trim().toUpperCase();
+  const cat = document.getElementById('team-category').value;
+  const stage = document.getElementById('team-stage').value;
+  const name = document.getElementById('team-name-input').value.trim();
+  if (!id) { showToast('Ingresa el ID del equipo', '#ef4444'); return; }
+  if (!cat) { showToast('El ID no corresponde a un proyecto registrado', '#ef4444'); return; }
+  if (!stage) { showToast('Selecciona una etapa', '#ef4444'); return; }
+  currentEval.team = id; currentEval.projectName = name; currentEval.category = cat; currentEval.stage = stage;
+  document.getElementById('eval-team-badge').textContent = `${id} · ${name.substring(0,30)}${name.length>30?'…':''}`;
+  goTo('screen-evaluator');
+}
+
+function startEvaluation() {
+  const name = document.getElementById('evaluator-name').value.trim();
+  if (!name) { showToast('Ingresa tu nombre', '#ef4444'); return; }
+  currentEval.evaluator = name;
+  currentEval.presentation = document.getElementById('presentation-type').value;
+  currentEval.scores = {};
+  renderRubric();
+  goTo('screen-eval');
+}
+
+function renderRubric() {
+  const container = document.getElementById('eval-content');
+  let html = `<div class="progress-bar"><div class="progress-fill" style="width:66%"></div></div>
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">Evaluación — ${currentEval.team}</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:4px;">${currentEval.projectName}</p>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Evaluador: ${currentEval.evaluator}</p>`;
+  let cIdx = 0;
+  RUBRIC.forEach((section) => {
+    html += `<div class="rubric-section"><div class="rubric-header"><div class="rubric-title">${section.section}</div><div class="rubric-weight">${section.weight}%</div></div><div class="rubric-body">`;
+    section.criteria.forEach((crit) => {
+      const key = cIdx;
+      html += `<div class="criterion"><p class="criterion-text">${crit.text}</p><div class="options-grid">`;
+      crit.options.forEach((opt, oi) => {
+        html += `<button class="option-btn" id="opt-${key}-${oi}" onclick="selectOption(${key},${oi},${opt.val})"><span class="opt-level">${opt.label}</span>${opt.desc}</button>`;
+      });
+      html += `</div></div>`;
+      cIdx++;
+    });
+    html += `</div></div>`;
+  });
+  html += `<div style="margin-top:24px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+    <div style="font-size:13px;color:var(--muted);">Comentarios adicionales</div>
+    <input type="text" class="form-input" id="eval-comments" placeholder="Observaciones (opcional)" style="margin-top:8px;" />
+  </div>
+  <button class="btn btn-success btn-full" onclick="submitEvaluation()" style="margin-top:16px;padding:16px;font-size:15px;">✅ Enviar evaluación</button>
+  <div style="height:32px;"></div>`;
+  container.innerHTML = html;
+  document.getElementById('eval-nav-info').textContent = `${currentEval.team} · ${currentEval.evaluator}`;
+}
+
+function selectOption(criterionKey, optionIdx, val) {
+  for (let o = 0; o < 4; o++) {
+    const el = document.getElementById(`opt-${criterionKey}-${o}`);
+    if (el) el.classList.remove('selected');
+  }
+  const el = document.getElementById(`opt-${criterionKey}-${optionIdx}`);
+  if (el) el.classList.add('selected');
+  currentEval.scores[criterionKey] = val;
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  const { total } = computeScore(currentEval.scores);
+  document.getElementById('live-score').textContent = `${total} / 100`;
+}
+
+async function submitEvaluation() {
+  const answered = Object.keys(currentEval.scores).length;
+  const totalCriteria = criterionMap.length;
+  if (answered < totalCriteria) {
+    showToast(`Faltan ${totalCriteria - answered} criterio(s) por evaluar`, '#ef4444'); return;
+  }
+  const { total, breakdown } = computeScore(currentEval.scores);
+  const record = {
+    id: `${currentEval.team}-${Date.now()}`,
+    team: currentEval.team, projectName: currentEval.projectName,
+    evaluator: currentEval.evaluator, category: currentEval.category,
+    stage: currentEval.stage, presentation: currentEval.presentation,
+    scores: { ...currentEval.scores }, breakdown, total,
+    comments: document.getElementById('eval-comments')?.value || '',
+    timestamp: Date.now()
+  };
+  const data = await loadData();
+  data.push(record);
+  await saveData(data);
+
+  document.getElementById('final-score-display').textContent = total;
+  document.getElementById('result-team-badge').textContent = currentEval.team;
+  const bl = document.getElementById('breakdown-list');
+  bl.innerHTML = breakdown.map(b =>
+    `<div class="breakdown-row"><div class="breakdown-label">${b.section} <span style="font-size:11px;color:var(--muted)">(${b.weight}%)</span></div><div class="breakdown-score">${b.score}/${b.max}</div></div>`
+  ).join('');
+  document.getElementById('result-cat-badge').textContent = CAT_META[currentEval.category]?.label || currentEval.category;
+  goTo('screen-result');
+  showToast('¡Evaluación enviada exitosamente!');
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function adminLogin() {
+  const pass = document.getElementById('admin-password').value;
+  if (pass === ADMIN_PASS) {
+    document.getElementById('login-error').style.display = 'none';
+    renderAdmin();
+    goTo('screen-admin');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+function adminLogout() { document.getElementById('admin-password').value = ''; goTo('screen-scan'); }
+function switchTab(tab, event) {
+  ['tab-all','tab-ranking','tab-report'].forEach(t => document.getElementById(t).style.display = 'none');
+  document.getElementById(tab).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (event && event.target) event.target.classList.add('active');
+}
+
+const CAT_LABELS = { 'prototipo-fisico':'🔧 Prototipo físico', 'prototipo-software':'💻 Prototipo de software', 'investigacion':'📄 Investigación y propuesta' };
+const STAGE_LABELS = { 'exploracion':'🌱 Exploración', 'enfoque':'🎯 Enfoque', 'especializacion':'🚀 Especialización' };
+const STAGE_SEMESTERS = { 'exploracion':'1°–3° sem', 'enfoque':'4°–6° sem', 'especializacion':'7°–9° sem' };
+
+async function renderAdmin() {
+  const data = await loadData();
+  const cats = ['prototipo-fisico','prototipo-software','investigacion'];
+  const total = data.length;
+  const avgScore = total ? Math.round(data.reduce((a,r)=>a+r.total,0)/total) : 0;
+  const uniqueProjects = new Set(data.map(r=>r.team)).size;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Evaluaciones</div></div>
+    <div class="stat-card"><div class="stat-val">${uniqueProjects}</div><div class="stat-lbl">Proyectos</div></div>
+    <div class="stat-card"><div class="stat-val">${avgScore}</div><div class="stat-lbl">Promedio</div></div>
+  `;
+  const sorted = [...data].sort((a,b)=>b.total-a.total);
+  document.getElementById('all-teams-list').innerHTML = sorted.map((r,i) =>
+    `<div class="team-row">
+      <div class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i+1}</div>
+      <div style="flex:1">
+        <div class="team-name">${r.team} <span style="font-size:12px;color:var(--muted);font-weight:400;">— ${(r.projectName||'').substring(0,40)}${(r.projectName||'').length>40?'…':''}</span></div>
+        <div class="team-evaluator">${r.evaluator} · ${CAT_LABELS[r.category]||r.category} · ${STAGE_LABELS[r.stage]||r.stage}</div>
+      </div>
+      <div class="team-score-bar">
+        <div class="mini-bar"><div class="mini-fill" style="width:${r.total}%"></div></div>
+        <div class="team-score-val">${r.total}</div>
+      </div>
+    </div>`
+  ).join('') || '<p style="color:var(--muted);padding:16px;text-align:center;">Sin evaluaciones aún.</p>';
+
+  const stages = ['exploracion','enfoque','especializacion'];
+  let rankHTML = '';
+  cats.forEach(cat => {
+    rankHTML += `<div class="category-card"><div class="category-header"><div class="cat-icon">${cat==='prototipo-fisico'?'🔧':cat==='prototipo-software'?'💻':'📄'}</div><div><div style="font-size:15px;font-weight:600;">${CAT_LABELS[cat]}</div><div style="font-size:12px;color:var(--muted);">Promedio por proyecto · Mejores por etapa</div></div></div>`;
+    stages.forEach(stage => {
+      const inStage = data.filter(r=>r.category===cat && r.stage===stage);
+      const projectMap = {};
+      inStage.forEach(r => {
+        if (!projectMap[r.team]) projectMap[r.team] = { team: r.team, projectName: r.projectName, scores: [], evaluators: [] };
+        projectMap[r.team].scores.push(r.total);
+        projectMap[r.team].evaluators.push(r.evaluator);
+      });
+      const ranked = Object.values(projectMap)
+        .map(p => ({ ...p, avg: Math.round(p.scores.reduce((a,b)=>a+b,0)/p.scores.length), count: p.scores.length }))
+        .sort((a,b)=>b.avg-a.avg);
+      rankHTML += `<div class="stage-section"><div class="stage-label">${STAGE_LABELS[stage]} <span class="stage-badge">${STAGE_SEMESTERS[stage]}</span></div>`;
+      if (!ranked.length) {
+        rankHTML += `<div style="padding:12px 20px;font-size:13px;color:var(--muted);">Sin evaluaciones en esta etapa.</div>`;
+      } else {
+        ranked.slice(0,3).forEach((r,i) =>
+          rankHTML += `<div class="team-row"><div class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${['🥇','🥈','🥉'][i]||i+1}</div><div style="flex:1"><div class="team-name">${r.team}</div><div class="team-evaluator">${(r.projectName||'').substring(0,45)} · ${r.count} eval${r.count>1?'s':''}</div></div><div class="team-score-bar"><div class="mini-bar"><div class="mini-fill" style="width:${r.avg}%"></div></div><div class="team-score-val">${r.avg}</div></div></div>`
+        );
+      }
+      rankHTML += `</div>`;
+    });
+    rankHTML += `</div>`;
+  });
+  document.getElementById('ranking-content').innerHTML = rankHTML;
+  renderReport(data);
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+let reportFilter = 'all';
+function renderReport(data) {
+  const container = document.getElementById('report-content');
+  const projectMap = {};
+  PROJECTS.forEach(p => { projectMap[p.id] = { id: p.id, name: p.name, category: p.category, evaluations: [] }; });
+  data.forEach(r => {
+    if (projectMap[r.team]) projectMap[r.team].evaluations.push(r);
+    else { projectMap[r.team] = { id: r.team, name: r.projectName || r.team, category: r.category, evaluations: [r] }; }
+  });
+  const allProjects = Object.values(projectMap);
+  const cats = ['prototipo-fisico','prototipo-software','investigacion'];
+  const catLabels = { 'prototipo-fisico':'🔧 Prototipo físico', 'prototipo-software':'💻 Prototipo de software', 'investigacion':'📄 Investigación' };
+  const evalCount = data.length;
+  const evaluated = allProjects.filter(p=>p.evaluations.length>0);
+  const allScores = data.map(r=>r.total);
+  const globalAvg = evalCount ? Math.round(allScores.reduce((a,b)=>a+b,0)/evalCount) : 0;
+  const maxScore = evalCount ? Math.max(...allScores) : 0;
+  const minScore = evalCount ? Math.min(...allScores) : 0;
+
+  let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <div class="stat-card"><div class="stat-val">${evalCount}</div><div class="stat-lbl">Total evaluaciones</div></div>
+    <div class="stat-card"><div class="stat-val">${evaluated.length}/${allProjects.length}</div><div class="stat-lbl">Proyectos evaluados</div></div>
+    <div class="stat-card"><div class="stat-val">${globalAvg}</div><div class="stat-lbl">Promedio global</div></div>
+    <div class="stat-card"><div class="stat-val" style="font-size:18px;">${minScore}–${maxScore}</div><div class="stat-lbl">Rango de puntajes</div></div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-chip ${reportFilter==='all'?'active':''}" onclick="setReportFilter('all')">Todos</button>
+    <button class="filter-chip ${reportFilter==='prototipo-fisico'?'active':''}" onclick="setReportFilter('prototipo-fisico')">🔧 Prototipo físico</button>
+    <button class="filter-chip ${reportFilter==='prototipo-software'?'active':''}" onclick="setReportFilter('prototipo-software')">💻 Software</button>
+    <button class="filter-chip ${reportFilter==='investigacion'?'active':''}" onclick="setReportFilter('investigacion')">📄 Investigación</button>
+  </div>`;
+
+  cats.forEach(cat => {
+    if (reportFilter !== 'all' && reportFilter !== cat) return;
+    const catProjects = allProjects.filter(p=>p.category===cat);
+    const withEvals = catProjects.filter(p=>p.evaluations.length>0).sort((a,b)=>{
+      const avgA = a.evaluations.reduce((s,e)=>s+e.total,0)/a.evaluations.length;
+      const avgB = b.evaluations.reduce((s,e)=>s+e.total,0)/b.evaluations.length;
+      return avgB-avgA;
+    });
+    const withoutEvals = catProjects.filter(p=>p.evaluations.length===0);
+    html += `<div class="report-section"><div class="report-section-title">${catLabels[cat]} <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:auto;">${withEvals.length} evaluados · ${withoutEvals.length} pendientes</span></div>`;
+    if (withEvals.length === 0) {
+      html += `<p style="color:var(--muted);font-size:13px;padding:12px 0;">Sin evaluaciones para esta categoría.</p>`;
+    } else {
+      withEvals.forEach(p => {
+        const evs = p.evaluations;
+        const avg = Math.round(evs.reduce((s,e)=>s+e.total,0)/evs.length);
+        html += `<div class="project-report-card">
+          <div class="prc-header">
+            <div><div class="prc-id">${p.id} <span style="font-size:11px;font-weight:400;color:var(--muted);">· ${evs.length} evaluación${evs.length>1?'es':''}</span></div><div class="prc-name">${p.name}</div></div>
+            <div style="text-align:right;"><div style="font-size:22px;font-weight:800;font-family:'Syne',sans-serif;color:var(--accent);">${avg}</div><div style="font-size:11px;color:var(--muted);">promedio</div></div>
+          </div>
+          <div class="prc-scores">`;
+        evs.sort((a,b)=>b.total-a.total).forEach(e => {
+          html += `<div class="prc-score-row"><div class="prc-evaluator">👤 ${e.evaluator} <span style="font-size:11px;opacity:0.7;">· ${STAGE_LABELS[e.stage]||e.stage} · ${new Date(e.timestamp).toLocaleDateString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="prc-score-badge">${e.total}/100</div></div>`;
+          if (e.comments) html += `<div style="font-size:12px;color:var(--muted);padding:4px 0 6px 28px;font-style:italic;">"${e.comments}"</div>`;
+        });
+        html += `</div></div>`;
+      });
+    }
+    if (withoutEvals.length > 0) {
+      html += `<details style="margin-top:10px;"><summary style="font-size:13px;color:var(--muted);cursor:pointer;padding:8px 0;">⏳ ${withoutEvals.length} proyecto${withoutEvals.length>1?'s':''} sin evaluación</summary><div style="padding:8px 0 0;">`;
+      withoutEvals.forEach(p => { html += `<div style="font-size:13px;padding:6px 12px;color:var(--muted);border-left:2px solid var(--border);margin-bottom:4px;"><strong>${p.id}</strong> — ${p.name}</div>`; });
+      html += `</div></details>`;
+    }
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+}
+
+async function setReportFilter(filter) {
+  reportFilter = filter;
+  renderReport(await loadData());
+}
+
+// ============================================================
+// EXPORT XLSX  ← NUEVO: genera Excel real con SheetJS
+// ============================================================
+async function exportXLSX() {
+  const data = await loadData();
+  if (!data.length) { showToast('Sin datos para exportar', '#ef4444'); return; }
+
+  const wb = XLSX.utils.book_new();
+
+  // Hoja 1: Todas las evaluaciones
+  const headers = ['ID Equipo','Nombre Proyecto','Evaluador','Categoría','Etapa','Presentación','Puntaje Total','Marco Teórico y Fuentes','Impacto (propósito)','Metodología','Presentación de Solución','Comentarios','Fecha'];
+  const rows = data.map(r => {
+    const bdMap = {};
+    (r.breakdown||[]).forEach(b => { bdMap[b.section] = b.score; });
+    return [
+      r.team,
+      r.projectName || '',
+      r.evaluator,
+      CAT_LABELS[r.category] || r.category,
+      STAGE_LABELS[r.stage] || r.stage,
+      r.presentation,
+      r.total,
+      bdMap['Marco teórico y fuentes'] ?? '',
+      bdMap['Impacto (propósito)'] ?? '',
+      bdMap['Metodología'] ?? '',
+      bdMap['Presentación de solución'] ?? '',
+      r.comments || '',
+      new Date(r.timestamp).toLocaleString('es-MX')
+    ];
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws1['!cols'] = [10,40,20,22,18,14,14,16,16,14,20,30,20].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws1, 'Evaluaciones');
+
+  // Hoja 2: Resumen por proyecto (promedios)
+  const projectMap = {};
+  PROJECTS.forEach(p => { projectMap[p.id] = { id: p.id, name: p.name, category: p.category, stage: p.stage, evals: [] }; });
+  data.forEach(r => {
+    if (!projectMap[r.team]) projectMap[r.team] = { id: r.team, name: r.projectName||r.team, category: r.category, stage: r.stage, evals: [] };
+    projectMap[r.team].evals.push(r);
+  });
+  const summaryHeaders = ['ID Equipo','Nombre Proyecto','Categoría','Etapa','# Evaluaciones','Promedio Total','Marco Teórico Prom.','Impacto Prom.','Metodología Prom.','Presentación Prom.'];
+  const summaryRows = Object.values(projectMap).filter(p=>p.evals.length>0).sort((a,b)=>{
+    const avgA = a.evals.reduce((s,e)=>s+e.total,0)/a.evals.length;
+    const avgB = b.evals.reduce((s,e)=>s+e.total,0)/b.evals.length;
+    return avgB-avgA;
+  }).map(p => {
+    const n = p.evals.length;
+    const avgTotal = Math.round(p.evals.reduce((s,e)=>s+e.total,0)/n * 10)/10;
+    const sectionAvg = (key) => {
+      const vals = p.evals.map(e=>(e.breakdown||[]).find(b=>b.section===key)?.score||0);
+      return Math.round(vals.reduce((a,b)=>a+b,0)/n * 10)/10;
+    };
+    return [
+      p.id, p.name, CAT_LABELS[p.category]||p.category, STAGE_LABELS[p.stage]||p.stage, n, avgTotal,
+      sectionAvg('Marco teórico y fuentes'), sectionAvg('Impacto (propósito)'), sectionAvg('Metodología'), sectionAvg('Presentación de solución')
+    ];
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
+  ws2['!cols'] = [10,40,22,18,14,14,16,14,14,16].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws2, 'Resumen por Proyecto');
+
+  XLSX.writeFile(wb, 'ExpoIngenierias_2026_Evaluaciones.xlsx');
+  showToast('Excel descargado ✅');
+}
+
+async function exportCSV() {
+  const data = await loadData();
+  if (!data.length) { showToast('Sin datos para exportar', '#ef4444'); return; }
+  const headers = ['ID Equipo','Nombre Proyecto','Evaluador','Categoría','Etapa','Presentación','Puntaje Total','Comentarios','Fecha'];
+  const rows = data.map(r=>[r.team, r.projectName||'', r.evaluator, r.category, r.stage, r.presentation, r.total, r.comments||'', new Date(r.timestamp).toLocaleString('es-MX')]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'ExpoIngenierias_2026_Evaluaciones.csv'; a.click();
+  showToast('CSV descargado');
+}
+
+async function clearData() {
+  if (confirm('¿Eliminar todos los datos de evaluación? Esta acción no se puede deshacer.')) {
+    _memoryStore = [];
+    try { await window.storage.delete(STORAGE_KEY); } catch(e) {}
+    renderAdmin();
+    showToast('Datos eliminados.');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderProjectList();
+</script>
+</body>
+</html>
